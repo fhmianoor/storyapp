@@ -1,13 +1,33 @@
 import { addStory, addStoryGuest } from "../api/story.js";
+import { saveStory } from "../utils/idb.js";
 
 class AddModel {
   getToken() {
     return localStorage.getItem('token');
   }
 
-  submitStory(formData) {
+  async submitStory(formData) {
     const token = this.getToken();
-    return token ? addStory(formData, token) : addStoryGuest(formData);
+    const response = token ? await addStory(formData, token) : await addStoryGuest(formData);
+    
+    if (!response.error && response.data) {
+      // Pastikan data memiliki id sebelum disimpan ke IndexedDB
+      const storyData = {
+        id: response.data.id || response.data._id, // Coba ambil id atau _id
+        ...response.data,
+        syncStatus: 'synced',
+        lastSynced: new Date().toISOString()
+      };
+      
+      try {
+        await saveStory(storyData);
+      } catch (error) {
+        console.error('Error saving to IndexedDB:', error);
+        // Lanjutkan meskipun gagal menyimpan ke IndexedDB
+      }
+    }
+    
+    return response;
   }
 
   async getCurrentLocation() {
