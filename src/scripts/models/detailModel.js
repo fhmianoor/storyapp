@@ -1,8 +1,17 @@
 import { getStoryDetail } from '../api/story.js';
 
-export default class DetailStoryModel {
-  async fetchStory(id) {
-    const token = localStorage.getItem('token');
-    return await getStoryDetail(id, token);
+class DetailStoryModel {
+  getToken() {
+    return localStorage.getItem('token');
+  }
+
+  async getDetail(id) {
+    const token = this.getToken();
+    if (!token || !id) return null;
+    const res = await getStoryDetail(id, token);
+    if (!res.error) return res.story;
+    return null;
   }
 }
+
+export default DetailStoryModel; 

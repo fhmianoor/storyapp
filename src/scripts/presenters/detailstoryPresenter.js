@@ -1,12 +1,15 @@
+import DetailModel from "../models/detailModel.js";
+import { parseActivePathname } from "../utils/url-parser.js";
+
 export default class DetailStoryPresenter {
-  constructor(view, model, params) {
+  constructor(view, model) {
     this.view = view;
     this.model = model;
-    this.params = params;
   }
 
   async afterRender() {
-    const detail = await this.model.fetchStory(this.params.id);
-    document.getElementById('main-content').innerHTML = this.view.render(detail);
+    const { id } = parseActivePathname();
+    const story = await this.model.getDetail(id);
+    this.view.renderDetail(story);
   }
-}
+} 
